@@ -1,0 +1,131 @@
+#include <fstream>
+#include <queue>
+#include <vector>
+
+std::ifstream fin("castel2.in");
+std::ofstream fout("castel2.out");
+
+int n, m, tuff;
+
+char mat[1003][1003];
+
+int vf[1003][1003];
+
+bool a[1003][1003];
+const int di[] = { 1, -1, 0, 0 },
+dj[] = { 0, 0, 1, -1 };
+
+inline static bool cond(int i, int j)
+{
+    return i <= n && i >= 1 && j <= m && j >= 1;
+}
+
+void lee1(int x, int y)
+{
+    std::queue<std::pair<int, int>>q;
+    q.push({ x, y });
+    vf[x][y] = 1;
+    while (!q.empty())
+    {
+        int i = q.front().first, j = q.front().second;
+        q.pop();
+        for (int k = 0; k < 4; k++)
+        {
+            int ni = i + di[k];
+            int nj = j + dj[k];
+            if (cond(ni, nj) && mat[ni][nj] == '-' && a[ni][nj] == 0)
+            {
+                vf[ni][nj] = vf[i][j] + 1;
+                a[ni][nj] = 1;
+                q.push({ ni, nj });
+            }
+        }
+
+    }
+}
+
+void lee2(int x, int y)
+{
+    std::queue<std::pair<int, int>>q;
+    q.push({ x, y });
+    vf[x][y] = 0;
+    a[x][y] = 1;
+    while (!q.empty())
+    {
+        int i = q.front().first, j = q.front().second;
+        q.pop();
+        for (int k = 0; k < 4; k++)
+        {
+            int ni = i + di[k];
+            int nj = j + dj[k];
+            if (cond(ni, nj) && mat[ni][nj] == '-' && tuff > vf[i][j])
+            {
+                if (a[ni][nj] == 0)
+                {
+                    vf[ni][nj] = vf[i][j] + 1;
+                    a[ni][nj] = 1;
+                    q.push({ ni, nj });
+                }
+                else if (vf[i][j] < vf[ni][nj] - 1)
+                {
+                    vf[ni][nj] = vf[i][j] + 1;
+                    q.push({ ni, nj });
+                }
+            }
+            else if (cond(ni, nj) && mat[ni][nj] == 'Z' && a[ni][nj] == 0)
+            {
+                vf[ni][nj] = 0;
+                a[ni][nj] = 1;
+                q.push({ ni, nj });
+            }
+        }
+
+    }
+}
+void afisare()
+{
+    for (int i = 1; i <= n; i++, fout << '\n')
+        for (int j = 1; j <= m; j++)
+            fout << mat[i][j] << ' ';
+
+}
+void reset()
+{
+    for (int i = 1; i <= n; i++)
+        for (int j = 1; j <= m; j++)
+        {
+            vf[i][j] = 0;
+        }
+}
+int main()
+{
+    std::vector< std::pair <int, int> >v;
+    fin >> n >> m >> tuff;
+    for (int i = 1; i <= n; ++i)
+    {
+        for (int j = 1; j <= m; ++j)
+        {
+            fin >> mat[i][j];
+            if (mat[i][j] == 'Z')
+                v.push_back({ i,j });
+        }
+    }
+    for (int i = 0; i < v.size(); i++)
+    {
+        if (a[v[i].first][v[i].second] == 0)
+            lee2(v[i].first, v[i].second);
+    }
+    //reset();
+    if (a[n][m] == 1)
+    {
+        fout << -1; 
+        return 0;
+    }
+    lee1(1, 1);
+    //afisare();
+    if (vf[n][m])
+        fout << vf[n][m];
+    else
+        fout << -1;
+    return 0;
+}
